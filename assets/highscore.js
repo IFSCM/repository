@@ -1,5 +1,5 @@
 // highscore.js
-const gameVersion = "3.9";
+const gameVersion = "4.0";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const relayedEndpoint = relay + scoreEndpoint;
@@ -269,13 +269,13 @@ async function tryLogin() {
     if (twitterToken) {
         const tokenStatus = await checkToken(twitterToken);
         if (sessionStorage.getItem("isLoggedIn") === "true") {
-            showToast("Logged in");
+            showToast("Logged in as " + localStorage.getItem("twitter_username"));
             isLoggedIn = true;
         } else {
             showToast("Token Expired/Invalid, Refreshing.");
             const refreshStatus = await newRefreshToken(twitterRefreshToken);
             if (sessionStorage.getItem("isLoggedIn") === "true") {
-                showToast("Logged in");
+                showToast("Logged in as " + localStorage.getItem("twitter_username"));
                 isLoggedIn = true;
             } else {
                 showToast("Token Refresh Failed");
