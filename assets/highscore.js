@@ -1,5 +1,5 @@
 // highscore.js
-const gameVersion = "3.7";
+const gameVersion = "3.8";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const relayedEndpoint = relay + scoreEndpoint;
@@ -44,7 +44,14 @@ async function populateHS() {
 
                     const usernameElement = document.createElement('div');
                     usernameElement.classList.add('gameusername');
-                    usernameElement.textContent = username;
+                    // Create an anchor element
+                    const usernameAnchor = document.createElement('a');
+                    usernameAnchor.href = `https://twitter.com/${username}`;
+                    usernameAnchor.textContent = username;
+                    usernameAnchor.target = "_blank";
+
+                    // Append the anchor element to the usernameElement
+                    usernameElement.appendChild(usernameAnchor);
 
                     const scoreElement = document.createElement('div');
                     scoreElement.classList.add('gamescore');
