@@ -1,5 +1,5 @@
 // highscore.js
-const gameVersion = "4.0";
+const gameVersion = "4.1";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const relayedEndpoint = relay + scoreEndpoint;
@@ -112,9 +112,13 @@ async function newTwitterToken(state_code) {
             return response.json();
         })
         .then(data => {
+            const currentUnixTimeSeconds = Math.floor(Date.now() / 1000);
+            // Save it to local storage
+            localStorage.setItem("nextUpdate", currentUnixTimeSeconds);
             localStorage.setItem("twitter_token", data.access_token);
             localStorage.setItem("twitter_refresh", data.refresh_token);
             sessionStorage.setItem("isLoggedIn", "true");
+            sessionStorage.removeItem("attempt");
         })
         .catch(error => {
             console.error('Error fetching data:', error);
@@ -136,9 +140,13 @@ async function newRefreshToken(refresh_token) {
             return response.json();
         })
         .then(data => {
+            const currentUnixTimeSeconds = Math.floor(Date.now() / 1000);
+            // Save it to local storage
+            localStorage.setItem("nextUpdate", currentUnixTimeSeconds);
             localStorage.setItem("twitter_token", data.access_token);
             localStorage.setItem("twitter_refresh", data.refresh_token);
             sessionStorage.setItem("isLoggedIn", "true");
+            sessionStorage.removeItem("attempt");
 
             return true;
 
@@ -185,7 +193,23 @@ async function postMedia(text, media_id, token) {
     await fetch(postLink)
         .then(response => {
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                if (localStorage.getItem("twitter_refresh") && sessionStorage.getItem("attempt") === null) {
+                    sessionStorage.setItem("attempt", "true");
+                    postMedia(text, media_id, token);
+                }
+                else {
+                    localStorage.removeItem("twitter_token");
+                    localStorage.removeItem("twitter_refresh");
+                    localStorage.removeItem("twitter_pic");
+                    localStorage.removeItem("twitter_username");
+                    localStorage.removeItem("twitter_code_challenger");
+                    localStorage.removeItem("twitter_code_verifier");
+                    sessionStorage.removeItem("attempt");
+                    showToast("Error posting media. Removing login session. Please try again.");
+                    window.location.href = "/";
+                    throw new Error('Network response was not ok');
+
+                }
             }
             return response.json();
         })
@@ -198,6 +222,14 @@ async function postMedia(text, media_id, token) {
         })
         .catch(error => {
             console.error('Error fetching data:', error);
+            localStorage.removeItem("twitter_token");
+            localStorage.removeItem("twitter_refresh");
+            localStorage.removeItem("twitter_pic");
+            localStorage.removeItem("twitter_username");
+            localStorage.removeItem("twitter_code_challenger");
+            localStorage.removeItem("twitter_code_verifier");
+            showToast("Error posting media. Removing login session. Please try again.");
+            window.location.href = "/";
             return null;
         });
 }
@@ -226,6 +258,7 @@ async function checkToken(token) {
                 sessionStorage.setItem("isLoggedIn", "true");
                 return true;
             } else {
+                sessionStorage.setItem("isLoggedIn", "false");
                 return null;
             }
         })
@@ -266,25 +299,13 @@ async function tryLogin() {
     sessionStorage.setItem("isLoggedIn", "false");
     const twitterToken = localStorage.getItem("twitter_token");
     const twitterRefreshToken = localStorage.getItem("twitter_refresh");
-    if (twitterToken) {
-        const tokenStatus = await checkToken(twitterToken);
-        if (sessionStorage.getItem("isLoggedIn") === "true") {
-            showToast("Logged in as " + localStorage.getItem("twitter_username"));
-            isLoggedIn = true;
-        } else {
-            showToast("Token Expired/Invalid, Refreshing.");
-            const refreshStatus = await newRefreshToken(twitterRefreshToken);
-            if (sessionStorage.getItem("isLoggedIn") === "true") {
-                showToast("Logged in as " + localStorage.getItem("twitter_username"));
-                isLoggedIn = true;
-            } else {
-                showToast("Token Refresh Failed");
-                await initiateLogout();
-            }
-        }
+    const twitteruname = localStorage.getItem("twitter_username");
+    const twitterPic = localStorage.getItem("twitter_pic");
+    if (twitterToken && twitterRefreshToken && twitteruname && twitterPic) {
+        sessionStorage.setItem("isLoggedIn", "true");
+        isLoggedIn = true;
     }
 
-    const twitterPic = localStorage.getItem("twitter_pic");
     if (isLoggedIn) {
         // Create a new anchor element
         var loginLink = document.createElement("a");
@@ -522,11 +543,12 @@ async function getEndpoint() {
 }
 
 async function postSequence() {
-    const postText = "TEST";
 
     var twit_id = localStorage.getItem("twitter_username");
     var twit_url = localStorage.getItem("twitter_pic");
     var twit_points = sessionStorage.getItem("twitter_score");
+
+    const postText = "TEST";
 
     await uploadMedia(twit_id, twit_url, twit_points);
     showToast("Posting... ");
