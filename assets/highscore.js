@@ -1,5 +1,5 @@
 // highscore.js
-const gameVersion = "4.5";
+const gameVersion = "4.7";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const relayedEndpoint = relay + scoreEndpoint;
@@ -98,34 +98,36 @@ async function getIPAddress() {
 }
 
 async function newTwitterToken(state_code) {
-    const param = new URLSearchParams();
-    param.append("code", state_code);
-    param.append("code_verifier", sessionStorage.getItem("twitter_code_verifier"));
-    const queryStr = param.toString();
+    try {
+        const param = new URLSearchParams();
+        param.append("code", state_code);
+        param.append("code_verifier", sessionStorage.getItem("twitter_code_verifier"));
+        const queryStr = param.toString();
 
-    const genTokenLink = `${relayedEndpoint}/twitter/get_token?${queryStr}`;
-    await fetch(genTokenLink)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            const currentUnixTimeSeconds = Math.floor(Date.now() / 1000);
-            // Save it to local storage
-            localStorage.setItem("nextUpdate", currentUnixTimeSeconds);
-            localStorage.setItem("twitter_token", data.access_token);
-            localStorage.setItem("twitter_refresh", data.refresh_token);
-            sessionStorage.setItem("isLoggedIn", "true");
-            sessionStorage.removeItem("attempt");
-            checkToken(localStorage.getItem("twitter_token"));
-        })
-        .catch(error => {
-            console.error('Error fetching data:', error);
-            return null;
-        });
+        const genTokenLink = `${relayedEndpoint}/twitter/get_token?${queryStr}`;
+        const response = await fetch(genTokenLink);
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        const currentUnixTimeSeconds = Math.floor(Date.now() / 1000);
+
+        // Save it to local storage
+        localStorage.setItem("nextUpdate", currentUnixTimeSeconds);
+        localStorage.setItem("twitter_token", data.access_token);
+        localStorage.setItem("twitter_refresh", data.refresh_token);
+        sessionStorage.setItem("isLoggedIn", "true");
+        sessionStorage.removeItem("attempt");
+
+        await checkToken(data.access_token);
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        return null;
+    }
 }
+
 
 async function newRefreshToken(refresh_token) {
     const param = new URLSearchParams();
@@ -550,7 +552,7 @@ async function postSequence() {
     var twit_url = localStorage.getItem("twitter_pic");
     var twit_points = sessionStorage.getItem("twitter_score");
 
-    const postText = "TEST";
+    const postText = "I JUST SCORED " + twit_points + " POINTS on @BaseInvaderSol! BaseInvaders is beyond BASED. Will this net me some $BINV tokens? #BaseInvadersSol";
 
     await uploadMedia(twit_id, twit_url, twit_points);
     showToast("Posting... ");
