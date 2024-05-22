@@ -1,5 +1,5 @@
 // highscore.js
-const gameVersion = "5.4";
+const gameVersion = "5.5";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const restrictAll = false;
@@ -494,6 +494,7 @@ async function accountPoints(scoreValue) {
         })
         .then(data => {
             sessionStorage.setItem("twitter_score", scoreValue);
+            populateHS();
         })
         .catch(error => {
             console.error('Error fetching data:', error);
