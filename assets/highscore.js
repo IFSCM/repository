@@ -1,5 +1,5 @@
 // highscore.js
-const gameVersion = "5.3";
+const gameVersion = "5.4";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const restrictAll = false;
@@ -218,7 +218,7 @@ async function postMedia(text, media_id, token) {
             const data = await response.json();
             if (data && data.data) {
                 showToast("Tweeted Highscore!");
-                await accountPoints(scoreValue);
+                await accountPoints(sessionStorage.getItem('twitter_score'));
                 console.log('Tweet ID:', data.data.id);
                 console.log('Tweet Text:', data.data.text);
             }
