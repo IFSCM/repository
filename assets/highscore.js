@@ -1,5 +1,5 @@
 // highscore.js
-const gameVersion = "5.1";
+const gameVersion = "5.2";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const restrictAll = false;
@@ -555,6 +555,9 @@ async function getEndpoint() {
 
     } else if (pathname === '/version') {
         showToast("Game Version:" + gameVersion);
+        sessionStorage.removeItem("twitter_score");
+    } else {
+        sessionStorage.removeItem("twitter_score");
     }
 }
 
@@ -574,7 +577,7 @@ async function postSequence() {
 
 async function routineProcedure() {
     sessionStorage.setItem("baseinvader_version", gameVersion);
-    sessionStorage.removeItem("twitter_score");
+
     await getIPAddress();
     await tryLogin();
     await initHSButton();
