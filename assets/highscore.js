@@ -1,5 +1,5 @@
 // highscore.js
-const gameVersion = "4.4";
+const gameVersion = "4.5";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const relayedEndpoint = relay + scoreEndpoint;
@@ -531,7 +531,7 @@ async function getEndpoint() {
             await newTwitterToken(code_id);
             await tryLogin();
 
-            if (state_code.startsWith("post")) {
+            if (twitter_state.startsWith("post")) {
                 await postSequence();
             }
 
