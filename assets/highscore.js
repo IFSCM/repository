@@ -1,5 +1,5 @@
 // highscore.js
-const gameVersion = "4.8";
+const gameVersion = "4.9";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const restrictAll = false;
@@ -261,7 +261,6 @@ async function checkToken(token) {
                 localStorage.setItem("twitter_pic", data.profile_image_url);
                 console.log("Token Verified: ", token);
                 sessionStorage.setItem("isLoggedIn", "true");
-                tryLogin();
                 return true;
             } else {
                 sessionStorage.setItem("isLoggedIn", "false");
@@ -307,28 +306,37 @@ async function tryLogin() {
     const twitterRefreshToken = localStorage.getItem("twitter_refresh");
     const twitteruname = localStorage.getItem("twitter_username");
     const twitterPic = localStorage.getItem("twitter_pic");
+
     if (twitterToken && twitterRefreshToken && twitteruname && twitterPic) {
         sessionStorage.setItem("isLoggedIn", "true");
         isLoggedIn = true;
     }
 
     if (isLoggedIn) {
-        // Create a new anchor element
-        var loginLink = document.createElement("a");
-        // Set href attribute to "#" or any appropriate link
-        loginLink.innerHTML = '<img src="' + twitterPic + '" alt="Twitter Profile Picture" class="twitter-profile-pic">';
+        // Ensure the DOM is fully loaded before accessing elements
+        document.addEventListener("DOMContentLoaded", function () {
+            // Get the login button element
+            var loginButton = document.getElementById("login-button");
+            if (loginButton) {
+                // Create a new anchor element
+                var loginLink = document.createElement("a");
+                // Set href attribute to "#" or any appropriate link
+                loginLink.innerHTML = '<img src="' + twitterPic + '" alt="Twitter Profile Picture" class="twitter-profile-pic">';
 
-        // Replace the existing login button with the new anchor element
-        var loginButton = document.getElementById("login-button");
-        loginButton.parentNode.replaceChild(loginLink, loginButton);
+                // Replace the existing login button with the new anchor element
+                loginButton.parentNode.replaceChild(loginLink, loginButton);
 
-        // Add click event listener to the profile picture (inside the anchor element)
-        var profilePic = loginLink.querySelector(".twitter-profile-pic");
-        profilePic.addEventListener("click", function (event) {
-            event.preventDefault(); // Prevent the default action of the anchor element
-            // Toggle visibility of logout dropdown
-            var logoutDropdown = document.getElementById("logout-dropdown");
-            logoutDropdown.style.display = (logoutDropdown.style.display === "block") ? "none" : "block";
+                // Add click event listener to the profile picture (inside the anchor element)
+                var profilePic = loginLink.querySelector(".twitter-profile-pic");
+                profilePic.addEventListener("click", function (event) {
+                    event.preventDefault(); // Prevent the default action of the anchor element
+                    // Toggle visibility of logout dropdown
+                    var logoutDropdown = document.getElementById("logout-dropdown");
+                    logoutDropdown.style.display = (logoutDropdown.style.display === "block") ? "none" : "block";
+                });
+            } else {
+                console.error('Login button element not found in the DOM.');
+            }
         });
     }
 }
@@ -535,7 +543,7 @@ async function getEndpoint() {
             await newTwitterToken(code_id);
             await tryLogin();
 
-            if (twitter_state.startsWith("post")) {
+            if (twitter_state.includes("post")) {
                 console.log("Ready to Post");
                 await postSequence();
             }
