@@ -1,10 +1,10 @@
 // highscore.js
-const gameVersion = "5.2";
+const gameVersion = "5.3";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
-
-const relayedEndpoint = relay + scoreEndpoint;
 const restrictAll = false;
+const relayedEndpoint = relay + scoreEndpoint;
+
 
 async function populateHS() {
     // Fetch data from the endpoint
@@ -189,7 +189,7 @@ async function uploadMedia(id, url, points) {
 async function postMedia(text, media_id, token) {
     try {
         const param = new URLSearchParams();
-        param.append("text", text);
+        param.append("text", encodeURIComponent(text));
         param.append("media_id", media_id);
         param.append("token", token);
         const queryStr = param.toString();
@@ -517,7 +517,6 @@ async function logScore() {
 
         await initHSButton();
         sessionStorage.setItem("twitter_score", scoreValue);
-        console.log(sessionStorage.getItem("twitter_score"));
         await populateHS();
 
     } else {
@@ -568,8 +567,6 @@ async function postSequence() {
     var twit_points = sessionStorage.getItem("twitter_score");
 
     const postText = "I JUST SCORED " + twit_points + " POINTS on @BaseInvaderSol! BaseInvaders is beyond BASED. Will this net me some $BINV tokens? #BaseInvadersSol";
-    console.log(twit_points);
-    console.log(sessionStorage.getItem("twitter_score"));
     await uploadMedia(twit_id, twit_url, twit_points);
     showToast("Posting... ");
     await postMedia(postText, sessionStorage.getItem("twitter_media_id"), localStorage.getItem("twitter_token"));
