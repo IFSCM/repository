@@ -1,5 +1,5 @@
 // highscore.js
-const gameVersion = "4.3";
+const gameVersion = "4.4";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const relayedEndpoint = relay + scoreEndpoint;
@@ -258,6 +258,7 @@ async function checkToken(token) {
                 localStorage.setItem("twitter_pic", data.profile_image_url);
                 console.log("Token Verified: ", token);
                 sessionStorage.setItem("isLoggedIn", "true");
+                tryLogin();
                 return true;
             } else {
                 sessionStorage.setItem("isLoggedIn", "false");
