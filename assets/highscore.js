@@ -1,5 +1,5 @@
 // highscore.js
-const gameVersion = "4.2";
+const gameVersion = "4.3";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const relayedEndpoint = relay + scoreEndpoint;
@@ -119,6 +119,7 @@ async function newTwitterToken(state_code) {
             localStorage.setItem("twitter_refresh", data.refresh_token);
             sessionStorage.setItem("isLoggedIn", "true");
             sessionStorage.removeItem("attempt");
+            checkToken(localStorage.getItem("twitter_token"));
         })
         .catch(error => {
             console.error('Error fetching data:', error);
@@ -345,7 +346,7 @@ async function initiateLogout() {
 
 async function constructAuthURL(action) {
 
-    if (action === "post" && sessionStorage.getItem("isLoggedIn") === "true") {
+    if (action === "post" && sessionStorage.getItem("isLoggedIn") === "trues") {
         await postSequence();
     } else {
         try {
