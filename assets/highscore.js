@@ -1,5 +1,5 @@
 // highscore.js
-const gameVersion = "4.1";
+const gameVersion = "4.2";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const relayedEndpoint = relay + scoreEndpoint;
@@ -216,6 +216,7 @@ async function postMedia(text, media_id, token) {
         .then(data => {
             if (data && data.data) {
                 showToast("Tweeted Highscore!");
+                accountPoints(scoreValue);
                 console.log('Tweet ID:', data.data.id);
                 console.log('Tweet Text:', data.data.text);
             }
@@ -503,7 +504,6 @@ async function logScore() {
         });
 
         await initHSButton();
-        await accountPoints(scoreValue);
         await populateHS();
 
     } else {
