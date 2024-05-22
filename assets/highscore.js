@@ -1,5 +1,5 @@
 // highscore.js
-const gameVersion = "4.7";
+const gameVersion = "4.8";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const relayedEndpoint = relay + scoreEndpoint;
@@ -525,6 +525,7 @@ async function getEndpoint() {
         const code_id = urlParams.get('code');
 
         console.log("Twitter State:", state_code);
+        console.log("Local Twitter State:", twitter_state);
         console.log("Twitter Code:", code_id);
 
         if (twitter_state.includes(state_code)) {
