@@ -534,6 +534,7 @@ async function getEndpoint() {
             await tryLogin();
 
             if (twitter_state.startsWith("post")) {
+                console.log("Ready to Post");
                 await postSequence();
             }
 
