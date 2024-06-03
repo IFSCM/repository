@@ -1,5 +1,5 @@
 // highscore.js
-const gameVersion = "5.9";
+const gameVersion = "6.0";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const restrictAll = false;
@@ -310,7 +310,7 @@ async function tryLogin() {
         var loginButton = document.getElementById("login-button");
         if (loginButton) {
             console.error('Login button found');
-            
+
             // Create a new anchor element
             var loginLink = document.createElement("a");
             // Set href attribute to "#" or any appropriate link
@@ -576,6 +576,26 @@ async function routineProcedure() {
     await initHSButton();
     await populateHS();
     await getEndpoint();
+
+    //updateLinks("https://docs.baseinvaders.xyz/", "https://app.uniswap.org/swap?outputCurrency=&chain=base");
+
+}
+
+function updateLinks(gitbookUrl, uniswapUrl) {
+    const gitbookLink = document.getElementById("gitbook-link");
+    const uniswapLink = document.getElementById("uniswap-link");
+
+    if (gitbookLink) {
+        gitbookLink.href = gitbookUrl;
+    } else {
+        console.log("No Gitbook");
+    }
+
+    if (uniswapLink) {
+        uniswapLink.href = uniswapUrl;
+    } else {
+        console.log("No UniSwap");
+    }
 }
 
 // MutationObserver configuration
@@ -608,6 +628,7 @@ var observer = new MutationObserver(callback);
 // Start observing the target node for configured mutations
 document.addEventListener('DOMContentLoaded', function () {
     observer.observe(document.body, observerConfig);
+
 });
 
 routineProcedure()
