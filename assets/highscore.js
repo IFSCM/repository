@@ -577,6 +577,7 @@ async function routineProcedure() {
     await populateHS();
     await getEndpoint();
 
+    updateLinks("https://docs.baseinvaders.xyz/", "https://app.uniswap.org/swap");
     //updateLinks("https://docs.baseinvaders.xyz/", "https://app.uniswap.org/swap?outputCurrency=&chain=base");
 
 }
