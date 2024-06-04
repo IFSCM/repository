@@ -1,5 +1,5 @@
 // highscore.js
-const gameVersion = "6.4";
+const gameVersion = "6.5";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const restrictAll = false;
@@ -636,13 +636,14 @@ async function routineProcedure() {
     await populateHS();
     await getEndpoint();
 
-    //updateLinks(gblink, unilink);
+    updateLinks(gblink, unilink);
 
 }
 
 function updateLinks(gitbookUrl, uniswapUrl) {
     const gitbookLink = document.getElementById("gitbook-link");
     const uniswapLink = document.getElementById("uniswap-link");
+    const uniswapsocialLink = document.getElementById("uniswap-social-link");
 
     if (gitbookLink) {
         gitbookLink.href = gitbookUrl;
@@ -654,6 +655,12 @@ function updateLinks(gitbookUrl, uniswapUrl) {
         uniswapLink.href = uniswapUrl;
     } else {
         console.log("No UniSwap");
+    }
+
+    if (uniswapsocialLink) {
+        uniswapsocialLink.href = uniswapUrl;
+    } else {
+        console.log("No UniSwap Social");
     }
 }
 
