@@ -1,5 +1,5 @@
 // highscore.js
-const gameVersion = "6.5";
+const gameVersion = "6.6";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const restrictAll = false;
