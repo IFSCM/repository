@@ -1,9 +1,10 @@
 // highscore.js
-const gameVersion = "6.6";
+const gameVersion = "6.8";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const restrictAll = false;
 const relayedEndpoint = relay + scoreEndpoint;
+const postEndpoint = "https://xpost.xet3mirror.workers.dev";
 const gblink = "https://docs.baseinvaders.xyz";
 const unilink = "https://app.uniswap.org/swap?outputCurrency=&chain=base"
 
@@ -253,22 +254,14 @@ async function postMedia(text, media_id, token) {
         param.append("token", token);
         const queryStr = param.toString();
 
-        const postLink = `${relayedEndpoint}/twitter/post_tweet?${queryStr}`;
+        const postLink = `${postEndpoint}/twitter/post_tweet?${queryStr}`;
         const response = await fetch(postLink);
 
         if (!response.ok) {
             if (localStorage.getItem("twitter_token")) {
-                //sessionStorage.setItem("attempt", "true");
-                return false;
-                await postMedia(text, media_id, token);
-            } else {
-                localStorage.removeItem("twitter_token");
-                localStorage.removeItem("twitter_refresh");
-                localStorage.removeItem("twitter_pic");
-                localStorage.removeItem("twitter_username");
-                localStorage.removeItem("twitter_code_challenger");
-                localStorage.removeItem("twitter_code_verifier");
-                sessionStorage.removeItem("attempt");
+
+                localStorage.clear();
+                sessionStorage.clear();
                 showToast("Error posting media. Removing login session. Please try again.");
                 window.location.href = "/";
                 throw new Error('Network response was not ok');
@@ -285,17 +278,67 @@ async function postMedia(text, media_id, token) {
         }
     } catch (error) {
         console.error('Error fetching data:', error);
-        localStorage.removeItem("twitter_token");
-        localStorage.removeItem("twitter_refresh");
-        localStorage.removeItem("twitter_pic");
-        localStorage.removeItem("twitter_username");
-        localStorage.removeItem("twitter_code_challenger");
-        localStorage.removeItem("twitter_code_verifier");
+        localStorage.clear();
+        sessionStorage.clear();
         showToast("Error posting media. Removing login session. Please try again.");
         window.location.href = "/";
         return null;
     }
 }
+
+async function postTwitterMedia(text, mediaId, newToken) {
+    if (!text || !mediaId || !newToken) {
+        return Promise.reject({ error: 'Missing parameters' });
+    }
+
+    const payload = {
+        text: text,
+        media: {
+            media_ids: [mediaId]
+        }
+    };
+
+    try {
+        const response = await fetch('https://api.twitter.com/2/tweets', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${newToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            if (data && data.data) {
+                showToast("Tweeted Highscore!");
+                await accountPoints(sessionStorage.getItem('twitter_score'));
+                await populateHS();
+                console.log('Tweet ID:', data.data.id);
+                console.log('Tweet Text:', data.data.text);
+            }
+        } else if (response.status === 429) {
+            const resetTime = response.headers.get('x-rate-limit-reset');
+            const retryAfter = resetHeader ? parseInt(resetHeader) - Math.floor(Date.now() / 1000) : 15; // Default to 15 seconds if no header present            
+            console.log('429 Rate Limit:', resetTime);
+            console.log('Rate limit exceeded. Please wait ' + retryAfter + 'seconds before retrying.');
+        } else {
+            localStorage.clear();
+            sessionStorage.clear();
+            showToast("Error posting media. Removing login session. Please try again.");
+            window.location.href = "/";
+            throw new Error('Network response was not ok');
+        }
+    } catch (error) {
+        console.error('Error posting tweet:', error);
+        localStorage.clear();
+        sessionStorage.clear();
+        showToast("Error posting media. Removing login session. Please try again.");
+        window.location.href = "/";
+        return { error: error.message };
+    }
+}
+
 
 
 async function checkToken(token) {
@@ -623,7 +666,7 @@ async function postSequence() {
     const postText = "I JUST SCORED " + twit_points + " POINTS on @Base_Invader! BaseInvaders is beyond BASED. Will this net me some $BINV tokens? #BaseInvaders";
     await uploadMedia(twit_id, twit_url, twit_points);
     showToast("Posting... ");
-    await postMedia(postText, sessionStorage.getItem("twitter_media_id"), localStorage.getItem("twitter_token"));
+    await postTwitterMedia(postText, sessionStorage.getItem("twitter_media_id"), localStorage.getItem("twitter_token"));
 }
 
 async function routineProcedure() {
