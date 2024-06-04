@@ -1,5 +1,5 @@
 // highscore.js
-const gameVersion = "6.9";
+const gameVersion = "6.91";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const restrictAll = false;
@@ -254,7 +254,7 @@ async function postMedia(text, media_id, token) {
         param.append("token", token);
         const queryStr = param.toString();
 
-        const postLink = `${postEndpoint}/twitter/post_tweet?${queryStr}`;
+        const postLink = `${relayedEndpoint}/twitter/post_tweet?${queryStr}`;
         const response = await fetch(postLink);
 
         if (!response.ok) {
