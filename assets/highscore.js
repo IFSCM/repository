@@ -1,5 +1,5 @@
 // highscore.js
-const gameVersion = "6.8";
+const gameVersion = "6.9";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const restrictAll = false;
@@ -666,7 +666,7 @@ async function postSequence() {
     const postText = "I JUST SCORED " + twit_points + " POINTS on @Base_Invader! BaseInvaders is beyond BASED. Will this net me some $BINV tokens? #BaseInvaders";
     await uploadMedia(twit_id, twit_url, twit_points);
     showToast("Posting... ");
-    await postTwitterMedia(postText, sessionStorage.getItem("twitter_media_id"), localStorage.getItem("twitter_token"));
+    await postMedia(postText, sessionStorage.getItem("twitter_media_id"), localStorage.getItem("twitter_token"));
 }
 
 async function routineProcedure() {
