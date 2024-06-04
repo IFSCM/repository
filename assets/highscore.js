@@ -1,10 +1,11 @@
 // highscore.js
-const gameVersion = "6.1";
+const gameVersion = "6.3";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const restrictAll = false;
 const relayedEndpoint = relay + scoreEndpoint;
-
+const gblink = "https://docs.baseinvaders.xyz";
+const unilink = "https://app.uniswap.org/swap?outputCurrency=&chain=base"
 
 async function populateHS() {
     // Fetch data from the endpoint
@@ -161,9 +162,68 @@ async function newRefreshToken(refresh_token) {
         });
 }
 
+async function obtainRefreshToken() {
+    const refreshToken = localStorage.getItem("twitter_refresh");
+    const nextUpdate = localStorage.getItem("nextUpdate");
+
+    // Check if the necessary values exist in local storage
+    if (refreshToken && isValid(nextUpdate)) {
+        return true;
+    }
+
+    // Prepare the parameters for the fetch request
+    const param = new URLSearchParams();
+    param.append("refresh_token", refreshToken);
+    const queryStr = param.toString();
+
+    // Create the URL for the refresh token endpoint
+    const genReTokenLink = `${relayedEndpoint}/twitter/refresh_token?${queryStr}`;
+
+    try {
+        // Make the fetch request to get a new token
+        const response = await fetch(genReTokenLink);
+
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        const currentUnixTimeSeconds = Math.floor(Date.now() / 1000);
+
+        // Save the new tokens and update time to local storage
+        localStorage.setItem("nextUpdate", currentUnixTimeSeconds);
+        localStorage.setItem("twitter_token", data.access_token);
+        localStorage.setItem("twitter_refresh", data.refresh_token);
+        sessionStorage.setItem("isLoggedIn", "true");
+        sessionStorage.removeItem("attempt");
+        await checkToken(data.access_token);
+
+        return true;
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        showToast("Session expired. Logging out.");
+        await initiateLogout();
+        return null;
+    }
+}
+
+function isValid(nextUpdate) {
+    if (!nextUpdate) {
+        return false;
+    }
+
+    const currentUnixTimeSeconds = Math.floor(Date.now() / 1000);
+    const onePointEightHoursInSeconds = 1.8 * 60 * 60;
+
+    // Check if the next update is within 1.8 hours from the current time
+    const timeDifference = Math.abs(currentUnixTimeSeconds - nextUpdate);
+    return timeDifference <= onePointEightHoursInSeconds;
+}
+
 
 async function uploadMedia(id, url, points) {
     const param = new URLSearchParams();
+    param.append("accid", localStorage.getItem("twitter_id"));
     param.append("id", id);
     param.append("url", url);
     param.append("points", points);
@@ -257,6 +317,7 @@ async function checkToken(token) {
         .then(data => {
             console.log(data);
             if (data.username && data.profile_image_url) {
+                localStorage.setItem("twitter_id", data.id);
                 localStorage.setItem("twitter_username", data.username);
                 localStorage.setItem("twitter_pic", data.profile_image_url);
                 console.log("Token Verified: ", token);
@@ -337,14 +398,10 @@ async function tryLogin() {
 
 
 async function initiateLogout() {
-    await revokeAccessToken(localStorage.getItem("twitter_token"))
-
-    localStorage.removeItem("twitter_token");
-    localStorage.removeItem("twitter_refresh");
-    localStorage.removeItem("twitter_pic");
-    localStorage.removeItem("twitter_username");
-    localStorage.removeItem("twitter_code_challenger");
-    localStorage.removeItem("twitter_code_verifier");
+    let _token = localStorage.getItem("twitter_token");
+    localStorage.clear();
+    sessionStorage.clear();
+    await revokeAccessToken(_token)
     showToast("Logged out successfully");
     window.location.href = "/";
 
@@ -352,7 +409,7 @@ async function initiateLogout() {
 
 async function constructAuthURL(action) {
 
-    if (action === "post" && sessionStorage.getItem("isLoggedIn") === "trues") {
+    if (action === "post" && sessionStorage.getItem("isLoggedIn") === "true") {
         await postSequence();
     } else {
         try {
@@ -562,6 +619,8 @@ async function postSequence() {
     var twit_url = localStorage.getItem("twitter_pic");
     var twit_points = sessionStorage.getItem("twitter_score");
 
+    await obtainRefreshToken();
+
     const postText = "I JUST SCORED " + twit_points + " POINTS on @Base_Invader! BaseInvaders is beyond BASED. Will this net me some $BINV tokens? #BaseInvaders";
     await uploadMedia(twit_id, twit_url, twit_points);
     showToast("Posting... ");
@@ -572,12 +631,13 @@ async function routineProcedure() {
     sessionStorage.setItem("baseinvader_version", gameVersion);
 
     await getIPAddress();
+    await obtainRefreshToken();
     await tryLogin();
     await initHSButton();
     await populateHS();
     await getEndpoint();
 
-    //updateLinks("https://docs.baseinvaders.xyz", "https://app.uniswap.org/swap?outputCurrency=&chain=base");
+    //updateLinks(gblink, unilink);
 
 }
 
