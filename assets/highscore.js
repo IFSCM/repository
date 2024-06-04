@@ -636,7 +636,7 @@ async function routineProcedure() {
     await populateHS();
     await getEndpoint();
 
-    updateLinks(gblink, unilink);
+    //updateLinks(gblink, unilink);
 
 }
 
