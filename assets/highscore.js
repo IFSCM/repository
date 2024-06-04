@@ -1,5 +1,5 @@
 // highscore.js
-const gameVersion = "6.3";
+const gameVersion = "6.4";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
 const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
 const restrictAll = false;
@@ -167,43 +167,42 @@ async function obtainRefreshToken() {
     const nextUpdate = localStorage.getItem("nextUpdate");
 
     // Check if the necessary values exist in local storage
-    if (refreshToken && isValid(nextUpdate)) {
-        return true;
-    }
+    if (refreshToken && isValid(nextUpdate) === false) {
 
-    // Prepare the parameters for the fetch request
-    const param = new URLSearchParams();
-    param.append("refresh_token", refreshToken);
-    const queryStr = param.toString();
+        // Prepare the parameters for the fetch request
+        const param = new URLSearchParams();
+        param.append("refresh_token", refreshToken);
+        const queryStr = param.toString();
 
-    // Create the URL for the refresh token endpoint
-    const genReTokenLink = `${relayedEndpoint}/twitter/refresh_token?${queryStr}`;
+        // Create the URL for the refresh token endpoint
+        const genReTokenLink = `${relayedEndpoint}/twitter/refresh_token?${queryStr}`;
 
-    try {
-        // Make the fetch request to get a new token
-        const response = await fetch(genReTokenLink);
+        try {
+            // Make the fetch request to get a new token
+            const response = await fetch(genReTokenLink);
 
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const data = await response.json();
+            const currentUnixTimeSeconds = Math.floor(Date.now() / 1000);
+
+            // Save the new tokens and update time to local storage
+            localStorage.setItem("nextUpdate", currentUnixTimeSeconds);
+            localStorage.setItem("twitter_token", data.access_token);
+            localStorage.setItem("twitter_refresh", data.refresh_token);
+            sessionStorage.setItem("isLoggedIn", "true");
+            sessionStorage.removeItem("attempt");
+            await checkToken(data.access_token);
+
+            return true;
+        } catch (error) {
+            console.error('Error fetching data:', error);
+            showToast("Session expired. Logging out.");
+            await initiateLogout();
+            return null;
         }
-
-        const data = await response.json();
-        const currentUnixTimeSeconds = Math.floor(Date.now() / 1000);
-
-        // Save the new tokens and update time to local storage
-        localStorage.setItem("nextUpdate", currentUnixTimeSeconds);
-        localStorage.setItem("twitter_token", data.access_token);
-        localStorage.setItem("twitter_refresh", data.refresh_token);
-        sessionStorage.setItem("isLoggedIn", "true");
-        sessionStorage.removeItem("attempt");
-        await checkToken(data.access_token);
-
-        return true;
-    } catch (error) {
-        console.error('Error fetching data:', error);
-        showToast("Session expired. Logging out.");
-        await initiateLogout();
-        return null;
     }
 }
 
