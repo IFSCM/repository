@@ -1,7 +1,7 @@
 // highscore.js
 const gameVersion = "6.91";
 const relay = "https://varied-peggi-coredigital-47cb7fd7.koyeb.app/relay?link=";
-const scoreEndpoint = "http://ec2-3-8-192-132.eu-west-2.compute.amazonaws.com:4040";
+const scoreEndpoint = "http://ec2-13-42-34-67.eu-west-2.compute.amazonaws.com:4040";
 const restrictAll = false;
 const relayedEndpoint = relay + scoreEndpoint;
 const postEndpoint = "https://xpost.xet3mirror.workers.dev";
